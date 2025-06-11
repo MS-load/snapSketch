@@ -1,14 +1,44 @@
-<h2>Snap it!</h2>
+<div class="app-container">
+  <!-- Fixed QR Code Section -->
+  <section class="qr-section">
+    <h2 class="text-center text-2xl font-bold text-gray-800 mb-2">Snap 📸</h2>
+    <div class="d-flex justify-content-center align-items-center">
+      <div *ngIf="qrCodeData" class="text-center">
+        <qrcode
+          [qrdata]="qrCodeData"
+          [width]="120"
+          [errorCorrectionLevel]="'M'"
+          class="qr-code"
+        ></qrcode>
+        <p class="mt-1 text-center text-sm text-gray-500">{{ message }}</p>
+      </div>
+    </div>
+  </section>
 
-<input type="file" (change)="onFileSelected($event)" />
-<p *ngIf="message">{{ message }}</p>
+  <!-- Scrollable Image Gallery Section -->
+  <section class="gallery-section">
+    <div *ngIf="images.length > 0" class="image-gallery">
+      <div *ngFor="let img of images" class="image-item">
+        <div class="image-card" (click)="enlargeImage(img)">
+          <img [src]="img" alt="Uploaded image" class="gallery-image" />
+        </div>
+      </div>
+    </div>
+    <div *ngIf="images.length === 0" class="no-images">
+      <p>No images yet! Scan the QR code to get started 🚀</p>
+    </div>
+  </section>
+</div>
 
-<hr />
-
-<button (click)="loadImages()">Load Images</button>
-
-<div *ngIf="images.length > 0" style="margin-top: 20px">
-  <div *ngFor="let img of images" style="margin: 10px 0">
-    <img [src]="img" alt="Uploaded image" width="200" />
+<div *ngIf="isImageModalOpen" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-content">
+      <button type="button" class="modal-close" (click)="closeModal()">
+        <span>&times;</span>
+      </button>
+      <div class="modal-body">
+        <img [src]="selectedImage" alt="Enlarged image" class="modal-image" />
+      </div>
+    </div>
   </div>
 </div>
