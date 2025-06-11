@@ -26,6 +26,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.message = 'Scan QR code to upload image';
 
     // Start polling for new images every 5 seconds
+    this.loadImages();
     this.startPolling();
   }
 
