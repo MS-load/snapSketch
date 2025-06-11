@@ -1,2 +1,3 @@
 # snapSketch
-A qucik app for gcc 2025
+
+A quick app for gcc 2025
