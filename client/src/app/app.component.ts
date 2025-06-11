@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 
 @Component({
@@ -6,7 +6,7 @@ import { SupabaseService } from './supabase.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'snapIt';
   message = '';
   images: string[] = [];
@@ -18,33 +18,16 @@ export class AppComponent {
 
   ngOnInit() {
     this.loadImages();
-    this.generateUploadLink();
+    // Generate the QR code URL using the current origin
+    const uploadUrl = `${window.location.origin}?action=upload`;
+    this.qrCodeData = uploadUrl;
+    this.message = 'Scan QR code to upload image';
   }
 
-  async generateUploadLink() {
-    const uniqueId = window.crypto.randomUUID();
-    const { data, error } = await this.supabase.createUploadUrl(uniqueId);
-
-    if (error || !data) {
-      this.message = 'Failed to generate upload link';
-      return;
-    }
-
-    // Create a URL-safe JSON string with the upload details
-    const uploadInfo = {
-      url: data.url,
-      token: data.token,
-      path: data.path,
-    };
-
-    // Convert to base64 to make it URL-safe
-    const uploadInfoStr = btoa(JSON.stringify(uploadInfo));
-
-    // Create a URL that points to your upload page with the encoded data
-    const uploadPageUrl = `${window.location.origin}/upload?data=${uploadInfoStr}`;
-
-    this.qrCodeData = uploadPageUrl;
-    this.message = 'Scan QR code to upload image';
+  isUploadView(): boolean {
+    // Check if the URL has the upload action parameter
+    const params = new URLSearchParams(window.location.search);
+    return params.get('action') === 'upload';
   }
 
   async onFileSelected(event: any) {

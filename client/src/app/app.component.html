@@ -1,32 +1,52 @@
 <div class="app-container">
-  <!-- Fixed QR Code Section -->
-  <section class="qr-section">
-    <h2 class="text-center text-2xl font-bold text-gray-800 mb-2">Snap 📸</h2>
-    <div class="d-flex justify-content-center align-items-center">
-      <div *ngIf="qrCodeData" class="text-center">
-        <qrcode
-          [qrdata]="qrCodeData"
-          [width]="250"
-          [errorCorrectionLevel]="'M'"
-          class="qr-code"
-        ></qrcode>
-        <p class="mt-1 text-center text-sm text-gray-500">{{ message }}</p>
-      </div>
+  <!-- Mobile Upload View (shown when accessed via QR code) -->
+  <section *ngIf="isUploadView()" class="mobile-upload">
+    <h2 class="text-center text-2xl font-bold text-gray-800 mb-2">
+      Upload Photo 📸
+    </h2>
+    <div class="upload-controls">
+      <input
+        type="file"
+        (change)="onFileSelected($event)"
+        accept="image/*"
+        capture="environment"
+        class="file-input"
+      />
+      <p class="mt-1 text-center text-sm text-gray-500">{{ message }}</p>
     </div>
   </section>
 
-  <!-- Scrollable Image Gallery Section -->
-  <section class="gallery-section">
-    <div *ngIf="images.length > 0" class="image-gallery">
-      <div *ngFor="let img of images" class="image-item">
-        <div class="image-card" (click)="enlargeImage(img)">
-          <img [src]="img" alt="Uploaded image" class="gallery-image" />
+  <!-- Desktop View (QR code and gallery) -->
+  <section *ngIf="!isUploadView()">
+    <!-- QR Code Section -->
+    <section class="qr-section">
+      <h2 class="text-center text-2xl font-bold text-gray-800 mb-2">Snap 📸</h2>
+      <div class="d-flex justify-content-center align-items-center">
+        <div *ngIf="qrCodeData" class="text-center">
+          <qrcode
+            [qrdata]="qrCodeData"
+            [width]="200"
+            [errorCorrectionLevel]="'M'"
+            class="qr-code"
+          ></qrcode>
+          <p class="mt-1 text-center text-sm text-gray-500">{{ message }}</p>
         </div>
       </div>
-    </div>
-    <div *ngIf="images.length === 0" class="no-images">
-      <p>No images yet! Scan the QR code to get started 🚀</p>
-    </div>
+    </section>
+
+    <!-- Scrollable Image Gallery Section -->
+    <section class="gallery-section">
+      <div *ngIf="images.length > 0" class="image-gallery">
+        <div *ngFor="let img of images" class="image-item">
+          <div class="image-card" (click)="enlargeImage(img)">
+            <img [src]="img" alt="Uploaded image" class="gallery-image" />
+          </div>
+        </div>
+      </div>
+      <div *ngIf="images.length === 0" class="no-images">
+        <p>No images yet! Scan the QR code to get started 🚀</p>
+      </div>
+    </section>
   </section>
 </div>
 
