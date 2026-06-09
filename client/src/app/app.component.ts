@@ -56,14 +56,21 @@ export class AppComponent implements OnInit, OnDestroy {
     return params.get('action') === 'upload';
   }
 
-  async onFileSelected(event: any) {
-    const file = event.target.files[0];
+  async onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
     if (!file) return;
 
     const { error } = await this.supabase.uploadImage(file);
-    this.message = error
-      ? 'Upload failed'
-      : 'Upload successful! Gallery will update shortly...';
+
+    if (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown upload error';
+      this.message = `Upload failed: ${errorMessage}`;
+      return;
+    }
+
+    this.message = 'Upload successful! Gallery will update shortly...';
   }
 
   async loadImages() {

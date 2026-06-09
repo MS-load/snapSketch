@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from 'src/environments/environment';
 
+type UploadResult = {
+  error: Error | null;
+  data: unknown;
+};
+
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
   private supabase: SupabaseClient;
@@ -48,12 +53,38 @@ export class SupabaseService {
     }
   }
 
-  async uploadImage(file: File): Promise<{ error: any; data: any }> {
-    const filePath = `${Date.now()}_${file.name}`;
-    const { data, error } = await this.supabase.storage
-      .from(this.bucketName)
-      .upload(filePath, file);
-    return { data, error };
+  async uploadImage(file: File): Promise<UploadResult> {
+    try {
+      const filePath = `${Date.now()}_${file.name}`;
+      const { data, error } = await this.supabase.storage
+        .from(this.bucketName)
+        .upload(filePath, file);
+
+      if (error) {
+        console.error('Supabase upload error:', {
+          bucket: this.bucketName,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          error,
+        });
+      }
+
+      return { data, error };
+    } catch (error) {
+      console.error('Unexpected upload exception:', {
+        bucket: this.bucketName,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        error,
+      });
+
+      return {
+        data: null,
+        error: error instanceof Error ? error : new Error('Unknown upload failure'),
+      };
+    }
   }
 
   async listImages(): Promise<string[]> {
