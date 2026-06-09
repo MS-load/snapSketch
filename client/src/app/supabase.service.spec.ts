@@ -6,6 +6,7 @@ describe('SupabaseService', () => {
   let service: SupabaseService;
 
   beforeEach(() => {
+    spyOn(console, 'warn').and.stub();
     TestBed.configureTestingModule({});
     service = TestBed.inject(SupabaseService);
   });
