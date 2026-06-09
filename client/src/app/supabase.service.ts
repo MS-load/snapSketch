@@ -87,24 +87,32 @@ export class SupabaseService {
     }
   }
 
-  async listImages(): Promise<string[]> {
-    const { data, error } = await this.supabase.storage
-      .from(this.bucketName)
-      .list('', { limit: 100 });
+private urlCache = new Map<string, string>();
 
-    if (error) {
-      console.error('List error:', error);
-      return [];
-    }
+async listImages(): Promise<string[]> {
+  const { data, error } = await this.supabase.storage
+    .from(this.bucketName)
+    .list('', { limit: 100 });
 
-    const signedUrls = await Promise.all(
-      data.map(async (file) => {
+  if (error) return [];
+
+  const urls = await Promise.all(
+    data
+      .filter(file => file.name !== '.emptyFolderPlaceholder')
+      .map(async file => {
+        if (this.urlCache.has(file.name)) {
+          return this.urlCache.get(file.name)!;
+        }
         const { data } = await this.supabase.storage
           .from(this.bucketName)
-          .createSignedUrl(file.name, 60 * 60 * 24 * 1); // 1 day expiry
-        return data?.signedUrl || '';
+          .createSignedUrl(file.name, 60 * 60 * 24);
+        const url = data?.signedUrl || '';
+        if (url) this.urlCache.set(file.name, url);
+        return url;
       })
-    );
-    return signedUrls.filter((url) => url !== '');
-  }
+  );
+
+  return urls.filter(Boolean);
+}
+
 }

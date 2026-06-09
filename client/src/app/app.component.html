@@ -11,7 +11,7 @@
           capture="environment"
           class="file-input"
           />
-          <p class="mt-1 text-center text-sm">{{ message }}</p>
+          <p class="mt-1 text-center text-sm">{{ message() }}</p>
         </div>
       </section>
     }
@@ -23,24 +23,24 @@
         <section class="qr-section">
           <h2 class="text-center text-2xl font-bold mb-2">Snap 📸</h2>
           <div class="d-flex justify-content-center align-items-center">
-            @if (qrCodeData) {
+            @if (qrCodeData()) {
               <div class="text-center">
                 <qrcode
-                  [qrdata]="qrCodeData"
+                  [qrdata]="qrCodeData()"
                   [width]="200"
                   [errorCorrectionLevel]="'M'"
                   class="qr-code"
                 ></qrcode>
-                <p class="mt-1 text-center text-sm text-gray-500">{{ message }}</p>
+                <p class="mt-1 text-center text-sm text-gray-500">{{ message() }}</p>
               </div>
             }
           </div>
         </section>
         <!-- Scrollable Image Gallery Section -->
         <section class="gallery-section">
-          @if (images.length > 0) {
+          @if (hasImages()) {
             <div class="image-gallery">
-              @for (img of images; track img) {
+              @for (img of images(); track img) {
                 <div class="image-item">
                   <div class="image-card" (click)="enlargeImage(img)">
                     <img [src]="img" alt="Uploaded image" class="gallery-image" />
@@ -49,7 +49,7 @@
               }
             </div>
           }
-          @if (images.length === 0) {
+          @if (!hasImages()) {
             <div class="no-images">
               <p>No images yet! Scan the QR code to get started 🚀</p>
             </div>
@@ -59,7 +59,7 @@
     }
   </div>
 
-  @if (isImageModalOpen) {
+  @if (isImageModalOpen()) {
     <div class="modal-overlay">
       <div class="modal-container">
         <div class="modal-content">
@@ -67,7 +67,7 @@
             <span>&times;</span>
           </button>
           <div class="modal-body">
-            <img [src]="selectedImage" alt="Enlarged image" class="modal-image" />
+            <img [src]="selectedImage()" alt="Enlarged image" class="modal-image" />
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -11,11 +11,13 @@ import { switchMap } from 'rxjs/operators';
 })
 export class AppComponent implements OnInit, OnDestroy {
   title = 'snapSketch';
-  message = '';
-  images: string[] = [];
-  qrCodeData = '';
-  selectedImage = '';
-  isImageModalOpen = false;
+  readonly message = signal('');
+  readonly images = signal<string[]>([]);
+  readonly qrCodeData = signal('');
+  readonly selectedImage = signal('');
+  readonly isImageModalOpen = signal(false);
+  readonly isUploadView = signal(this.getIsUploadViewFromUrl());
+  readonly hasImages = computed(() => this.images().length > 0);
   private pollingSubscription?: Subscription;
 
   constructor(private supabase: SupabaseService) {}
@@ -23,8 +25,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Generate the QR code URL using the current origin
     const uploadUrl = `${window.location.origin}/${this.title}?action=upload`;
-    this.qrCodeData = uploadUrl;
-    this.message = 'Scan QR code to upload image';
+    this.qrCodeData.set(uploadUrl);
+    this.message.set('Scan QR code to upload image');
 
     // Start polling for new images every 5 seconds
     this.loadImages();
@@ -43,14 +45,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.pollingSubscription = interval(5000)
       .pipe(switchMap(() => this.supabase.listImages()))
       .subscribe((newImages) => {
-        // Update if there are more images than before
-        if (newImages.length > this.images.length) {
-          this.images = newImages;
-        }
+        this.images.set(newImages);
       });
   }
 
-  isUploadView(): boolean {
+  private getIsUploadViewFromUrl(): boolean {
     // Check if the URL has the upload action parameter
     const params = new URLSearchParams(window.location.search);
     return params.get('action') === 'upload';
@@ -66,24 +65,25 @@ export class AppComponent implements OnInit, OnDestroy {
     if (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown upload error';
-      this.message = `Upload failed: ${errorMessage}`;
+      this.message.set(`Upload failed: ${errorMessage}`);
       return;
     }
 
-    this.message = 'Upload successful! Gallery will update shortly...';
+    this.message.set('Upload successful! Gallery will update shortly...');
   }
 
   async loadImages() {
-    this.images = await this.supabase.listImages();
+    const imageList = await this.supabase.listImages();
+    this.images.set(imageList);
   }
 
   enlargeImage(img: string) {
-    this.selectedImage = img;
-    this.isImageModalOpen = true;
+    this.selectedImage.set(img);
+    this.isImageModalOpen.set(true);
   }
 
   closeModal() {
-    this.isImageModalOpen = false;
-    this.selectedImage = '';
+    this.isImageModalOpen.set(false);
+    this.selectedImage.set('');
   }
 }
